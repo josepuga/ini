@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ini.h"
+#include "ini.hpp"
 
 using namespace std;
 

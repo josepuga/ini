@@ -14,7 +14,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message("Building Release...")
 endif()
 
-include_directories(include)
+include_directories(src)
 
 add_executable(demo_ini 
     demo_ini.cpp 

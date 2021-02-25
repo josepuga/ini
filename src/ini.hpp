@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef INI_H
-#define INI_H
-#define INI_H_VERSION "0.9.1"
+#ifndef INI_HPP
+#define INI_HPP
+#define INI_HPP_VERSION "0.9.1"
 
 #include <string>
 #include <utility>
@@ -170,4 +170,4 @@ private:
     //std::vector<std::string> m_comments;
     ini::sections_t m_sections;
 };
-#endif // INI_H
+#endif // INI_HPP
