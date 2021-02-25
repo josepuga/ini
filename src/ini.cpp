@@ -128,6 +128,92 @@ bool Ini::GetValueBool(const std::string& section, const std::string& key, const
     return result;
 }
 
+vector<string> Ini::GetSplitValuesString(const std::string& section, const std::string& key, const char sep, const std::string& def)
+{
+    vector<string> result;
+    auto val = GetValue(section, key);
+    if (val == "") {
+        return result;
+    }
+    stringstream ss(val);
+    string buff;
+    while (getline(ss, buff, sep)) {
+        if (buff == "") {
+            result.push_back(def);
+        } else {
+            result.push_back(buff);
+        }
+    }
+    return result;
+}
+
+vector<int> Ini::GetSplitValuesInt(const std::string& section, const std::string& key, const char sep, const int def)
+{
+    vector<int> result;
+    auto val = GetValue(section, key);
+    if (val == "") {
+        return result;
+    }
+
+    stringstream ss(val);
+    string buff;
+    while (getline(ss, buff, sep)) {
+        int newVal;
+        try {
+            newVal = stoi(buff);
+        } catch (std::invalid_argument& e) {
+            newVal = def;
+        }
+        result.push_back(newVal);
+    }
+    return result;
+}
+
+vector<float> Ini::GetSplitValuesFloat(const std::string& section, const std::string& key, const char sep, const float def)
+{
+    vector<float> result;
+    auto val = GetValue(section, key);
+    if (val == "") {
+        return result;
+    }
+
+    stringstream ss(val);
+    string buff;
+    while (getline(ss, buff, sep)) {
+        float newVal;
+        try {
+            newVal = stof(buff);
+        } catch (std::invalid_argument& e) {
+            newVal = def;
+        }
+        result.push_back(newVal);
+    }
+    return result;
+}
+
+vector<bool> Ini::GetSplitValuesBool(const std::string& section, const std::string& key, const char sep, const bool def)
+{
+    vector<bool> result;
+    auto val = GetValue(section, key);
+    if (val == "") {
+        return result;
+    }
+    stringstream ss(val);
+    string buff;
+    while (getline(ss, buff, sep)) {
+        if (buff == "true" || buff == "1") {
+            result.push_back(true);
+        } 
+        else if (buff == "false" || buff == "0") {
+            result.push_back(false);
+        } 
+        else {
+            result.push_back(def);
+        }
+    }
+    return result;
+}
+
 void Ini::ParseLines() {
 
     string sec, key, val, com;

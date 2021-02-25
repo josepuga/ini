@@ -1,0 +1,3 @@
+0.9.0 - 2020  First Release.
+0.9.1 - 2021-02 Added Split Methods to extract values with a delimiter. 
+

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 José Puga
+Copyright (c) 2020-2021 José Puga
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ SOFTWARE.
 
 #ifndef INI_H
 #define INI_H
-#define INI_H_VERSION "0.9.0"
+#define INI_H_VERSION "0.9.1"
 
 #include <string>
 #include <utility>
@@ -61,7 +61,8 @@ public:
      * @param default (optional) default value if is not set.
      * @return value.
      * */
-    std::string GetValueString(const std::string& section, const std::string& key, const std::string def = "") const;
+    std::string GetValueString(const std::string& section, const std::string& key, 
+                    const std::string def = "") const;
 
     /**
      * @brief Return the value's section as int
@@ -70,7 +71,8 @@ public:
      * @param default (optional) default value if is not set or error converting.
      * @return value.
      * */
-    int GetValueInt(const std::string& section, const std::string& key, const int def = 0) const;
+    int GetValueInt(const std::string& section, const std::string& key, 
+            const int def = 0) const;
 
     /**
      * @brief Return the value's section as float
@@ -79,7 +81,8 @@ public:
      * @param default (optional) default value if is not set or error converting.
      * @return value.
      * */
-    float GetValueFloat(const std::string& section, const std::string& key, const float def = 0.0) const;
+    float GetValueFloat(const std::string& section, const std::string& key, 
+            const float def = 0.0) const;
 
     /**
      * @brief Return the value's section as bool
@@ -88,7 +91,52 @@ public:
      * @param default (optional) default value if is not set or value <> (0, 1, false, true)
      * @return value.
      * */
-    bool GetValueBool(const std::string& section, const std::string& key, const bool def = false) const;
+    bool GetValueBool(const std::string& section, const std::string& key, 
+            const bool def = false) const;
+
+    /**
+     * @brief Return a vector of string splitting the value with a separator
+     * @param section "" for no section.
+     * @param key.
+     * @param separator (optional) separator to split the values. Defaul is comma ','.
+     * @param default (optional) default value if an element is an empty string. 
+     * @return vector with values or empty if the key is empty or doesnt exists.
+     * */
+    std::vector<std::string> GetSplitValuesString(const std::string& section, const std::string& key, 
+                        const char sep = ',', const std::string& def = "");
+
+    /**
+     * @brief Return a vector of int splitting the value with a separator
+     * @param section "" for no section.
+     * @param key.
+     * @param separator (optional) separator to split the values. Defaul is comma ','.
+     * @param default (optional) default value if an element has an error converting
+     * @return vector with values or empty if the key is empty or doesnt exists.
+     * */
+    std::vector<int> GetSplitValuesInt(const std::string& section, const std::string& key, 
+                        const char sep = ',', const int def = 0);
+
+    /**
+     * @brief Return a vector of float splitting the value with a separator
+     * @param section "" for no section.
+     * @param key.
+     * @param separator (optional) separator to split the values. Defaul is comma ','.
+     * @param default (optional) default value if an element has an error converting
+     * @return vector with values or empty if the key is empty or doesnt exists.
+     * */
+    std::vector<float> GetSplitValuesFloat(const std::string& section, const std::string& key, 
+                        const char sep = ',', const float def = 0.0);
+
+    /**
+     * @brief Return a vector of bool splitting the value with a separator
+     * @param section "" for no section.
+     * @param key.
+     * @param separator (optional) separator to split the values. Defaul is comma ','.
+     * @param default (optional) default value if an element has an error converting
+     * @return vector with values or empty if the key is empty or doesnt exists.
+     * */
+    std::vector<bool> GetSplitValuesBool(const std::string& section, const std::string& key, 
+                        const char sep = ',', const bool def = false);
 
     /**
      * @brief Check if the section exist
