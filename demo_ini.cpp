@@ -59,16 +59,19 @@ int main()
         cout << key << " = " << myIni.GetValueString("", key, "My default value!") << "\n";
     }
 
-    //TEST SPLIT VALUES WITH SEPARATOR
+    //TEST SPLIT VALUES WITH SEPARATOR AND HEX
     cout << "\nTest split values with separator\n";
     /***WARNING: check always if vectors are empty.***/
     vector<int> res = myIni.GetSplitValuesInt(sectionName, "resolution", 'x');
     cout << "Resolution: Width = " << res.at(0) << " and Height = " << res.at(1) << "\n";
 
-    res = myIni.GetSplitValuesInt(sectionName, "avatar rgb color");
-    cout << "Avatar RGB Color = " << res.at(0) << ", " << res.at(1) << ", " << res.at(2) << "\n";
-
     res = myIni.GetSplitValuesInt(sectionName, "flag rgb color", ',', 255); //255 = white
     cout << "Flag RGB Color (default is white) = " << res.at(0) << ", " << res.at(1) << ", " << res.at(2) << "\n";
+
+    res = myIni.GetSplitValuesInt(sectionName, "avatar rgb color");
+    cout << "Avatar RGB Color = " << res.at(0) << ", " << res.at(1) << ", " << res.at(2) << "\n";
+    
+    //use GetValueHex for int, GetValueHex32 for uint32_t
+    cout << "Avatar Hex Color = " << hex << myIni.GetValueHex(sectionName, "avatar hex color") << endl;
 
 }  

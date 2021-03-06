@@ -18,7 +18,6 @@ include_directories(src)
 
 add_executable(demo_ini 
     demo_ini.cpp 
-    src/ini.cpp
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
