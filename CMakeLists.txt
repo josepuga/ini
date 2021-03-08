@@ -17,7 +17,7 @@ endif()
 include_directories(src)
 
 add_executable(demo_ini 
-    demo_ini.cpp 
+    test/demo_ini.cpp 
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

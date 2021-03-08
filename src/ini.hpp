@@ -22,32 +22,314 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-/**
- * TODO:
- * char GetSplitValuesChar(const std::string& section, const std::string& key, const char sep, const char def))
- * */   
 #ifndef INI_HPP
 #define INI_HPP
-#define INI_HPP_VERSION "0.9.2"
+#define INI_HPP_VERSION "1.0.0"
 
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 #include <map>
 #include <fstream>
 #include <regex>
 #include <iostream>
+
+
+
+//GetValue<type>(...)
+    /**
+     * @brief Return the value's section as typel
+     * @param section "" for no section.
+     * @param key
+     * @param default (optional) default value if is not set
+     * for bool values return true only if value = (1, true)
+     * @return value.
+     * */
+
+//GetSplitValues<type>(...)
+    /**
+     * @brief Return a vector of int splitting the value with a separator
+     * @param section "" for no section.
+     * @param key
+     * @param separator (optional) separator to split the values. Defaul is comma ','.
+     * @param default (optional) default value if an element has an error converting
+     * @return vector with values or empty if the key is empty or doesnt exists.
+     * */
+
+// GetValueHex() and GetSplitValuesHex() :
+// same as above, but only for types convertible to int. The value must be a hex
+// number 
+
+
 namespace ini
 {
     typedef std::pair<std::string, std::string> keyvalue_t;
     typedef std::multimap<std::string, keyvalue_t> sections_t;
 }
 
+
 class Ini
 {
 public:
 
     Ini() {}
+
+// Type bool
+    template <typename T>
+    std::enable_if_t< std::is_same< T, bool >::value, 
+    T > GetValue(const std::string& section, const std::string& key, const T def = false) const
+    {
+        auto val = _GetValue(section, key);
+        std::transform(val.begin(), val.end(), val.begin(), ::tolower);
+        bool result = false;
+        if (val == "true" || val == "1") {
+            result = true;
+        } 
+        else if (val == "false" || val == "0") {
+            result = false;
+        } 
+        else {
+            result = def;
+        }
+        return result;
+    }
+
+    template <typename T>
+    std::enable_if_t< std::is_same< T, bool >::value, 
+    std::vector<T> > GetSplitValues(const std::string& section, const std::string& key, 
+                const char sep = ',',  const T def = false) const
+    {
+        std::vector<bool> result;
+        auto val = _GetValue(section, key);
+        if (val == "") {
+            return result;
+        }
+        std::stringstream ss(val);
+        std::string buff;
+        while (getline(ss, buff, sep)) {
+            if (buff == "true" || buff == "1") {
+                result.push_back(true);
+            } 
+            else if (buff == "false" || buff == "0") {
+                result.push_back(false);
+            } 
+            else {
+                result.push_back(def);
+            }
+        }
+        return result;
+    }
+
+// Type char
+    template <typename T>
+    std::enable_if_t< std::is_same< T, char >::value, 
+    T > GetValue(const std::string& section, const std::string& key, const T def = '\0') const
+    {
+        auto result = _GetValue(section, key);
+        if (result == "") {
+            result = def;
+        }
+        return result.at(0);   
+    }
+
+    template <typename T>
+    std::enable_if_t< std::is_same< T, char >::value, 
+    std::vector<T> > GetSplitValues(const std::string& section, const std::string& key, 
+                const char sep = ',',  const T def = '\0') const
+    {
+        std::vector<T> result;
+        auto val = _GetValue(section, key);
+        if (val == "") {
+            return result;
+        }
+        std::stringstream ss(val);
+        std::string buff;
+        while (getline(ss, buff, sep)) {
+            if (buff == "") {
+                result.push_back(def);
+            } else {
+                result.push_back(buff.at(0));
+            }
+        }
+        return result;
+    }
+
+
+
+
+// Type string
+    template <typename T>
+    std::enable_if_t< std::is_same< T, std::string >::value, 
+    T > GetValue(const std::string& section, const std::string& key, const T def = "") const
+    {
+        auto result = _GetValue(section, key);
+        if (result == "") {
+            result = def;
+        }
+        return result;   
+    }
+
+    template <typename T>
+    std::enable_if_t< std::is_same< T, std::string >::value, 
+    std::vector<T> > GetSplitValues(const std::string& section, const std::string& key, 
+                const char sep = ',',  const T def = "") const
+    {
+        std::vector<T> result;
+        auto val = _GetValue(section, key);
+        if (val == "") {
+            return result;
+        }
+        std::stringstream ss(val);
+        std::string buff;
+        while (getline(ss, buff, sep)) {
+            if (buff == "") {
+                result.push_back(def);
+            } else {
+                result.push_back(buff);
+            }
+        }
+        return result;
+    }
+
+
+// Type float
+    template <typename T>
+    std::enable_if_t< std::is_same< T, float >::value, 
+    T > GetValue(const std::string& section, const std::string& key, const T def = 0.0f) const
+    {
+        T result;
+        try {
+            result = std::stof(_GetValue(section, key));
+        } catch (std::invalid_argument& e) {
+            result = def;
+        }
+        return result;        
+    }
+
+    template <typename T>
+    std::enable_if_t< std::is_same< T, float >::value, 
+    std::vector<T> > GetSplitValues(const std::string& section, const std::string& key, 
+                const char sep = ',',  const T def = 0.0f) const
+    {
+        std::vector<T> result;
+        auto val = _GetValue(section, key);
+        if (val == "") {
+            return result;
+        }
+
+        std::stringstream ss(val);
+        std::string buff;
+        while (getline(ss, buff, sep)) {
+            T newVal;
+            try {
+                newVal = stof(buff);
+            } catch (std::invalid_argument& e) {
+                newVal = def;
+            }
+            result.push_back(newVal);
+        }
+        return result;
+    }     
+
+
+// Convertible to int
+    template <typename T>
+    std::enable_if_t< std::is_convertible< T, int >::value &&
+                     !std::is_same< T, bool >::value &&
+                     !std::is_same< T, char >::value &&
+                     !std::is_same< T, float >::value,
+    T > GetValue(const std::string& section, const std::string& key, const T def = 0, int base = 10) const
+    {
+        T result;
+        try {
+            result = std::stoi(_GetValue(section, key), 0, base);
+        } catch (std::invalid_argument& e) {
+            result = def;
+        }
+        return result;        
+    }
+
+    template <typename T>
+    std::enable_if_t< std::is_convertible< T, int >::value &&
+                     !std::is_same< T, bool >::value &&
+                     !std::is_same< T, char >::value &&
+                     !std::is_same< T, float >::value,
+     T > GetValueHex(const std::string& section, const std::string& key, const T def = 0) const
+    {
+        return GetValue(section, key, def, 16);
+    }    
+
+    template <typename T>
+    std::enable_if_t< std::is_convertible< T, int >::value &&
+                     !std::is_same< T, bool >::value &&
+                     !std::is_same< T, char >::value &&
+                     !std::is_same< T, float >::value,
+    std::vector<T> > GetSplitValues(const std::string& section, const std::string& key, 
+                const char sep = ',',  const T def = 0) const
+    {
+        std::vector<T> result;
+        auto val = _GetValue(section, key);
+        if (val == "") {
+            return result;
+        }
+
+        std::stringstream ss(val);
+        std::string buff;
+        while (getline(ss, buff, sep)) {
+            int newVal;
+            try {
+                newVal = stoi(buff);
+            } catch (std::invalid_argument& e) {
+                newVal = def;
+            }
+            result.push_back(newVal);
+        }
+        return result;
+    } 
+
+    template <typename T>
+    std::enable_if_t< std::is_convertible< T, int >::value &&
+                     !std::is_same< T, bool >::value &&
+                     !std::is_same< T, char >::value &&
+                     !std::is_same< T, float >::value,
+    std::vector<T> > GetSplitValuesHex(const std::string& section, const std::string& key, 
+                const char sep = ',',  const T def = 0) const
+    {
+        //TODO: avoid duplicate code with GetSplitValue<int>
+        std::vector<T> result;
+        auto val = _GetValue(section, key);
+        if (val == "") {
+            return result;
+        }
+
+        std::stringstream ss(val);
+        std::string buff;
+        while (getline(ss, buff, sep)) {
+            int newVal;
+            try {
+                newVal = stoi(buff, 0, 16);
+            } catch (std::invalid_argument& e) {
+                newVal = def;
+            }
+            result.push_back(newVal);
+        }
+        return result;
+    } 
+
+    //Default type
+    std::string GetValue(const std::string& section, const std::string& key, const std::string def = "") const
+    {
+        return GetValue<std::string>(section, key, def);
+    }
+
+    std::vector<std::string> GetSplitValues(const std::string& section, const std::string& key, 
+                const char sep = ',',  const std::string def = "") const
+    {
+        return GetSplitValues<std::string>(section, key, sep, def);
+    }
+
+
 
     /**
      * @brief Load all data from the file.
@@ -89,309 +371,6 @@ public:
         auto found = m_fileName.find_last_of("/\\");
         return m_fileName.substr(0, found); // For file name only: substr(found+1);
     }
-
-    /**
-     * @brief Return the value's section as string
-     * @param section. "" for no section.
-     * @param key
-     * @param default (optional) default value if is not set.
-     * @return value.
-     * */
-    std::string GetValueString(const std::string& section, const std::string& key, 
-                    const std::string& def = "") const
-    {
-        std::string result;
-        result = GetValue(section, key);
-        if (result == "") {
-            result = def;
-        }
-        return result;
-    }
-
-    /**
-     * @brief Return the value's section as int
-     * @param section. "" for no section.
-     * @param key
-     * @param default (optional) default value if is not set or error converting.
-     * @return value.
-     * */
-    int GetValueInt(const std::string& section, const std::string& key, 
-            const int def = 0) const
-    {
-        int result;
-        try {
-            result = std::stoi(GetValue(section, key));
-        } catch (std::invalid_argument& e) {
-            result = def;
-        }
-        return result;
-    }
-
-    /**
-     * @brief Return the value's section as int 
-     * The value must be an hex number.
-     * @param section. "" for no section.
-     * @param key
-     * @param default (optional) default value if is not set or error converting.
-     * @return value.
-     * */
-    int GetValueHex(const std::string& section, const std::string& key, 
-            const int def = 0) const
-    {
-        int result;
-        try {
-            result = std::stoi(GetValue(section, key), 0, 16);
-        } catch (std::invalid_argument& e) {
-            result = def;
-        }
-        return result;
-    }
-
-    /**
-     * @brief Return the value's section as uint_32
-     * The value must be an hex number. Use this function to avoid warnigs
-     * about narrowing convertion.
-     * @param section. "" for no section.
-     * @param key
-     * @param default (optional) default value if is not set or error converting.
-     * @return value.
-     * */
-    uint32_t GetValueHex32(const std::string& section, const std::string& key, 
-            const int def = 0) const 
-    {
-        return static_cast<uint32_t>(GetValueHex(section, key, def));
-    }
-
-    /**
-     * @brief Return the value's section as float
-     * @param section "" for no section.
-     * @param key
-     * @param default (optional) default value if is not set or error converting.
-     * @return value.
-     * */
-    float GetValueFloat(const std::string& section, const std::string& key, 
-            const float def = 0.0) const
-    {
-        float result;
-        try {
-            result = std::stof(GetValue(section, key));
-        } catch (std::invalid_argument& e) {
-            result = def;
-        }
-        return result;
-    }
-
-    /**
-     * @brief Return the value's section as bool
-     * @param section "" for no section.
-     * @param key
-     * @param default (optional) default value if is not set or value <> (0, 1, false, true)
-     * @return value.
-     * */
-    bool GetValueBool(const std::string& section, const std::string& key, 
-            const bool def = false) const
-    {
-        auto val = GetValue(section, key);
-        std::transform(val.begin(), val.end(), val.begin(), ::tolower);
-        bool result = false;
-        if (val == "true" || val == "1") {
-            result = true;
-        } 
-        else if (val == "false" || val == "0") {
-            result = false;
-        } 
-        else {
-            result = def;
-        }
-        return result;
-    }
-
-    /**
-     * @brief Return the value's section as a single char.
-     * Only return the first character, rest are ignored
-     * @param section "" for no section.
-     * @param key
-     * @param default (optional) default value.
-     * @return value.
-     * */
-    char GetValueSingleChar(const std::string& section, const std::string& key, 
-            const char def = '\0') const
-    {
-        auto tmp = GetValue(section, key);
-        auto result = (tmp != "" ? tmp.at(0) : def);
-        return result;
-    }
-
-    /**
-     * @brief Return a vector of string splitting the value with a separator
-     * @param section "" for no section.
-     * @param key
-     * @param separator (optional) separator to split the values. Defaul is comma ','.
-     * @param default (optional) default value if an element is an empty string. 
-     * @return vector with values or empty if the key is empty or doesnt exists.
-     * */
-    std::vector<std::string> GetSplitValuesString(const std::string& section, const std::string& key, 
-                        const char sep = ',', const std::string& def = "")
-    {
-        std::vector<std::string> result;
-        auto val = GetValue(section, key);
-        if (val == "") {
-            return result;
-        }
-        std::stringstream ss(val);
-        std::string buff;
-        while (getline(ss, buff, sep)) {
-            if (buff == "") {
-                result.push_back(def);
-            } else {
-                result.push_back(buff);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @brief Return a vector of int splitting the value with a separator
-     * @param section "" for no section.
-     * @param key
-     * @param separator (optional) separator to split the values. Defaul is comma ','.
-     * @param default (optional) default value if an element has an error converting
-     * @return vector with values or empty if the key is empty or doesnt exists.
-     * */
-    std::vector<int> GetSplitValuesInt(const std::string& section, const std::string& key, 
-                        const char sep = ',', const int def = 0)
-    {
-        std::vector<int> result;
-        auto val = GetValue(section, key);
-        if (val == "") {
-            return result;
-        }
-
-        std::stringstream ss(val);
-        std::string buff;
-        while (getline(ss, buff, sep)) {
-            int newVal;
-            try {
-                newVal = stoi(buff);
-            } catch (std::invalid_argument& e) {
-                newVal = def;
-            }
-            result.push_back(newVal);
-        }
-        return result;
-    }                        
-
-    /**
-     * @brief Return a vector of int splitting the value with a separator.
-     * The values must be an hex number.
-     * @param section "" for no section.
-     * @param key
-     * @param separator (optional) separator to split the values. Defaul is comma ','.
-     * @param default (optional) default value if an element has an error converting
-     * @return vector with values or empty if the key is empty or doesnt exists.
-     * */
-    std::vector<int> GetSplitValuesHex(const std::string& section, const std::string& key, 
-                        const char sep = ',', const int def = 0)
-    {
-        std::vector<int> result;
-        auto val = GetValue(section, key);
-        if (val == "") {
-            return result;
-        }
-
-        std::stringstream ss(val);
-        std::string buff;
-        while (getline(ss, buff, sep)) {
-            int newVal;
-            try {
-                newVal = stoi(buff, 0, 16);
-            } catch (std::invalid_argument& e) {
-                newVal = def;
-            }
-            result.push_back(newVal);
-        }
-        return result;
-    }                        
-
-    /**
-     * @brief Return a vector of int splitting the value with a separator.
-     * The values must be an hex number. Use this function to avoid warnigs
-     * about narrowing convertion.
-     * @param section "" for no section.
-     * @param key
-     * @param separator (optional) separator to split the values. Defaul is comma ','.
-     * @param default (optional) default value if an element has an error converting
-     * @return vector with values or empty if the key is empty or doesnt exists.
-     * */
-    std::vector<uint32_t> GetSplitValuesHex32(const std::string& section, const std::string& key, 
-                        const char sep = ',', const uint32_t def = 0)
-    {
-        auto vec = GetSplitValuesHex(section, key, sep, def);
-        return std::vector<uint32_t>(vec.begin(), vec.end()); 
-    }
-
-    /**
-     * @brief Return a vector of float splitting the value with a separator
-     * @param section "" for no section.
-     * @param key
-     * @param separator (optional) separator to split the values. Defaul is comma ','.
-     * @param default (optional) default value if an element has an error converting
-     * @return vector with values or empty if the key is empty or doesnt exists.
-     * */
-    std::vector<float> GetSplitValuesFloat(const std::string& section, const std::string& key, 
-                        const char sep = ',', const float def = 0.0)
-    {
-        std::vector<float> result;
-        auto val = GetValue(section, key);
-        if (val == "") {
-            return result;
-        }
-
-        std::stringstream ss(val);
-        std::string buff;
-        while (getline(ss, buff, sep)) {
-            float newVal;
-            try {
-                newVal = stof(buff);
-            } catch (std::invalid_argument& e) {
-                newVal = def;
-            }
-            result.push_back(newVal);
-        }
-        return result;
-    }                        
-
-    /**
-     * @brief Return a vector of bool splitting the value with a separator
-     * @param section "" for no section.
-     * @param key
-     * @param separator (optional) separator to split the values. Defaul is comma ','.
-     * @param default (optional) default value if an element has an error converting
-     * @return vector with values or empty if the key is empty or doesnt exists.
-     * */
-    std::vector<bool> GetSplitValuesBool(const std::string& section, const std::string& key, 
-                        const char sep = ',', const bool def = false)
-    {
-        std::vector<bool> result;
-        auto val = GetValue(section, key);
-        if (val == "") {
-            return result;
-        }
-        std::stringstream ss(val);
-        std::string buff;
-        while (getline(ss, buff, sep)) {
-            if (buff == "true" || buff == "1") {
-                result.push_back(true);
-            } 
-            else if (buff == "false" || buff == "0") {
-                result.push_back(false);
-            } 
-            else {
-                result.push_back(def);
-            }
-        }
-        return result;
-    }                        
 
     /**
      * @brief Check if the key exists and has a value.
@@ -457,14 +436,13 @@ public:
         return result;
     }    
 
-
 private:
     std::string m_fileName;
     std::vector<std::string> m_linesBuffer;
     //std::vector<std::string> m_comments;
     ini::sections_t m_sections;
 
-    std::string GetValue(const std::string& section, const std::string& key) const
+    std::string _GetValue(const std::string& section, const std::string& key) const
     {
         if (!SectionExists(section)) {
             return "";

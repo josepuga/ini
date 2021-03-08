@@ -8,3 +8,9 @@
 	GetValueSingleChar, GetSectionKeys, GetFilePath, and KeyExists methods.
 	Merged all in a single header.
 	Minor bugs fixed.
+
+1.0.0 - 2021-03
+	Removed many methods. Now the code uses templates, to get values the new
+	methods are: GetValue<type>, GetValueHex<type>, GetSplitValues<type> and
+	GetSplitValuesHex<type>.
+	GetValue() and GetSplitValues() are default to std::string types.

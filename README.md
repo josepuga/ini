@@ -19,7 +19,6 @@ A simple ini file reader class for C++.
 ## Cons
 
 - Write data not implemeted.
-- Not Metaprogramming for types. (in TODO list)
 
 ## Usage and Demo
 
