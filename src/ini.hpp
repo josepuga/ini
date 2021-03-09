@@ -39,7 +39,7 @@ SOFTWARE.
 
 //GetValue<type>(...)
     /**
-     * @brief Return the value's section as typel
+     * @brief Return the value's section as type
      * @param section "" for no section.
      * @param key
      * @param default (optional) default value if is not set
@@ -49,7 +49,7 @@ SOFTWARE.
 
 //GetSplitValues<type>(...)
     /**
-     * @brief Return a vector of int splitting the value with a separator
+     * @brief Return a vector of type splitting the value with a separator
      * @param section "" for no section.
      * @param key
      * @param separator (optional) separator to split the values. Defaul is comma ','.
