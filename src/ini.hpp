@@ -24,7 +24,7 @@ SOFTWARE.
 
 #ifndef INI_HPP
 #define INI_HPP
-#define INI_HPP_VERSION "1.0.0"
+#define INI_HPP_VERSION "1.0.1"
 
 #include <string>
 #include <type_traits>
@@ -39,7 +39,7 @@ SOFTWARE.
 
 //GetValue<type>(...)
     /**
-     * @brief Return the value's section as type
+     * @brief Return the value's section as typel
      * @param section "" for no section.
      * @param key
      * @param default (optional) default value if is not set
@@ -49,7 +49,7 @@ SOFTWARE.
 
 //GetSplitValues<type>(...)
     /**
-     * @brief Return a vector of type splitting the value with a separator
+     * @brief Return a vector of int splitting the value with a separator
      * @param section "" for no section.
      * @param key
      * @param separator (optional) separator to split the values. Defaul is comma ','.
@@ -243,7 +243,7 @@ public:
     {
         T result;
         try {
-            result = std::stoi(_GetValue(section, key), 0, base);
+            result = std::stoll(_GetValue(section, key), 0, base);
         } catch (std::invalid_argument& e) {
             result = def;
         }
@@ -279,7 +279,7 @@ public:
         while (getline(ss, buff, sep)) {
             int newVal;
             try {
-                newVal = stoi(buff);
+                newVal = stoll(buff);
             } catch (std::invalid_argument& e) {
                 newVal = def;
             }
@@ -308,7 +308,7 @@ public:
         while (getline(ss, buff, sep)) {
             int newVal;
             try {
-                newVal = stoi(buff, 0, 16);
+                newVal = stoll(buff, 0, 16);
             } catch (std::invalid_argument& e) {
                 newVal = def;
             }

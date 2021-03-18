@@ -14,3 +14,6 @@
 	methods are: GetValue<type>, GetValueHex<type>, GetSplitValues<type> and
 	GetSplitValuesHex<type>.
 	GetValue() and GetSplitValues() are default to std::string types.
+	
+1.0.1 - 2021-03
+	Changed stoll() instead stoi() to prevent out of range exceptions.
