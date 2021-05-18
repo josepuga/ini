@@ -24,7 +24,7 @@ SOFTWARE.
 
 #ifndef INI_HPP
 #define INI_HPP
-#define INI_HPP_VERSION "1.0.1"
+#define INI_HPP_VERSION "1.0.2"
 
 #include <string>
 #include <type_traits>
@@ -466,15 +466,15 @@ private:
             if (lin.empty()) {
                 continue;
             }
+            if (LineIsComment(lin)) {
+                continue;
+            }
             if (IfLineIsSectionSet(lin, sec)) {
                 sectionActive = sec;
                 continue;
             }
             if (IfLineIsKeySet(lin, key, val)) {
                 m_sections.insert(std::pair<std::string, ini::keyvalue_t>(sectionActive, std::make_pair(key, val)));
-                continue;
-            }
-            if (LineIsComment(lin)) {
                 continue;
             }
         }
